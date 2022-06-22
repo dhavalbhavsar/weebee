@@ -37,7 +37,58 @@ class CreateCinemaSchema extends Migration
      */
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        Schema::create('theaters', function($table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('movies', function($table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->integer('theater_id')->unsigned();
+            $table->foreign('theater_id')->references('id')->on('theaters')->onDelete('cascade');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('shows', function($table) {
+            $table->increments('id');
+            $table->datetime('start');
+            $table->datetime('end');
+            $table->integer('movie_id')->unsigned();
+            $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('seats', function($table) {
+            $table->increments('id');
+            $table->string('raw_name')->comment('Raw name like A, B, C, D'); 
+            $table->integer('seats')->comment('Like raw A have 10 seats so here 10 will be placed.');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+
+        Schema::create('prices', function($table) {
+            $table->increments('id');
+            $table->float('price', 8, 2);
+            $table->integer('seat_id')->unsigned();
+            $table->foreign('seat_id')->references('id')->on('seats')->onDelete('cascade');
+            $table->integer('show_id')->unsigned();
+            $table->foreign('show_id')->references('id')->on('shows')->onDelete('cascade');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('bookings', function($table) {
+            $table->increments('id');
+            $table->integer('seat_number')->comment('Like if raw A have 10 seats then we consider 1-10');
+            $table->integer('price_id')->unsigned();
+            $table->foreign('price_id')->references('id')->on('prices')->onDelete('cascade');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -47,5 +98,10 @@ class CreateCinemaSchema extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('theaters');
+        Schema::dropIfExists('movies');
+        Schema::dropIfExists('shows');
+        Schema::dropIfExists('seats');
+        Schema::dropIfExists('bookings');
     }
 }
